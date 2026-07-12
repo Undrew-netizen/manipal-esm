@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Exams | Manipal EMS</title>
+    <link rel="stylesheet" href="main.css">
+    <script src="api.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidetop" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; top: 0; position: absolute; margin-top: 20px;">
+            <img src="logo manipal.png" alt="Manipal EMS logo" class="logo">
+            <h3 style="color: #fff; font-weight: bold; font-size: 20px;">Manipal EMS</h3>
+        </div>
+        <hr style="width: 100%; border: 1px solid #fff; margin-top: 20vh;">
+        <span class="button" style="background-color: transparent; margin-top: 20px; font-weight: bolder; width: 160px; height: 40px;"><a href="studentDashboard.html" style="color: #fff; text-decoration: none;"><i class="fa-brands fa-slack" style="margin-right: 10px;"></i>Dashboard</a></span>
+        <span class="button" style="background-color: transparent; margin-top: 20px; font-weight: bolder; width: 160px; height: 40px;"><a href="my exams.html" style="color: #fff; text-decoration: none;"><i class="fa-solid fa-calendar-days" style="margin-right: 10px;"></i>My Exams</a></span>
+        <span class="button" style="background-color: transparent; margin-top: 20px; font-weight: bolder; width: 160px; height: 40px;"><a href="results.html" style="color: #fff; text-decoration: none;"><i class="fa-solid fa-chart-bar" style="margin-right: 10px;"></i>Results</a></span>
+        <span class="button" style="background-color: transparent; margin-top: 20px; font-weight: bolder; width: 160px; height: 40px;"><a href="notifications.html" style="color: #fff; text-decoration: none;"><i class="fa-solid fa-bell" style="margin-right: 10px;"></i>Notifications</a></span>
+        <span class="button" style="background-color: transparent; margin-top: 20px; font-weight: bolder; width: 160px; height: 40px;"><a href="profile.html" style="color: #fff; text-decoration: none;"><i class="fa-solid fa-user" style="margin-right: 10px;"></i>Profile</a></span>
+        <span class="button" style="background-color: transparent; margin-top: 20px; font-weight: bolder; width: 160px; height: 40px;"><a href="setting.html" style="color: #fff; text-decoration: none;"><i class="fa-solid fa-gear" style="margin-right: 10px;"></i>Settings</a></span>
+        <button type="button" class="button" style="background-color: transparent; color: #410202; font-weight: bolder; width: 180px; height: 40px; border-radius: 10px; border: 2px solid #fff; position: absolute; bottom: 3%;"><a href="home.html" style="color: #fff; text-decoration: none;">Logout <i class="fa-solid fa-arrow-right"></i></a></button>
+    </aside>
+    <nav class="navbar" aria-label="Top navigation">
+        <h3 style="position: absolute; left: 6%;">My Exams</h3>
+        <span class="notification-icon"><a href="notifications.html" aria-label="Notifications"><i class="fa-solid fa-bell" style="color: rgb(80, 30, 32);"></i></a></span>
+        <i class="fa-solid fa-moon" style="color: rgb(80, 30, 32);"></i>
+        <input type="search" placeholder="Search exams by unit code or title..." aria-label="Search" class="search-bar" style="height: 30px; width: 300px; border-radius: 20px; border: 1px solid #ccc; padding: 5px;">
+        <span class="profile-icon" style="margin-right: 30px;"><a href="profile.html" style="color: inherit; text-decoration: none;"><i class="fa-solid fa-user" style="color: rgb(80, 30, 32); margin-right: 10px;"></i><span data-current-user>current user</span></a></span>
+    </nav>
+    <main class="student-page">
+        <div class="student-tabs"><span class="selected">All</span><span>Upcoming</span><span>Active</span><span>Pending</span><span>Completed</span></div>
+        <section class="student-panel"><h2>My examination schedule</h2><table class="student-table"><thead><tr><th>Course</th><th>Date &amp; time</th><th>Venue</th><th>Duration</th><th>Status</th></tr></thead><tbody><tr><td>Data Structures &amp; Algorithms</td><td>15 Jul 2026, 9:00 AM</td><td>Lecture Hall A</td><td>2 hours</td><td><span class="student-status">Upcoming</span></td></tr><tr><td>Database Management Systems</td><td>15 Jul 2026, 3:00 PM</td><td>Lecture Hall B</td><td>2 hours</td><td><span class="student-status">Upcoming</span></td></tr><tr><td>Computer Networks</td><td>10 Jul 2026, 10:00 AM</td><td>Block 14, Room 204</td><td>2 hours</td><td><span class="student-status">Completed</span></td></tr></tbody></table></section>
+        <section class="student-panel"><h2>Exam instructions</h2><p>Carry your Manipal ID card, report 30 minutes early, and ensure that all electronic devices are switched off before entering the examination hall.</p></section>
+    </main>
+</body>
+</html>

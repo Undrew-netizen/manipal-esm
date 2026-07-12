@@ -5,31 +5,36 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Sign Up</title>
         <link rel="stylesheet" href="main.css">
+        <script src="api.js" defer></script>
     </head>
     <body class="login-page">
         <div class="login-container">
             <h1 style="color: #fff; font-weight: bold; font-size: 30px;">Sign Up</h1>
-            <form style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+            <form id="signup-form" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
                 <label for="name" style="font-weight: bolder; color: #ffffff;">Name:</label>
-                <input type="text" id="name" placeholder="Name" required style="height: 30px; width: 300px; border-radius: 20px; border: 1px solid #ccc; padding: 5px;">
+                <input type="text" id="name" name="name" placeholder="Name" required style="height: 30px; width: 300px; border-radius: 20px; border: 1px solid #ccc; padding: 5px;">
                  <label for="student-id" style="font-weight: bolder; color: #ffffff;">Student ID/Staff ID:</label>
-                <input type="text" id="student-id" placeholder="Student ID" required style="height: 30px; width: 300px; border-radius: 20px; border: 1px solid #ccc; padding: 5px;">
+                <input type="text" id="student-id" name="identifier" placeholder="Student ID" required style="height: 30px; width: 300px; border-radius: 20px; border: 1px solid #ccc; padding: 5px;">
                 
                 <label for="email" style="font-weight: bolder; color: #ffffff;">Email:</label>
-                <input type="email" id="email" placeholder="Email" required style="height: 30px; width: 300px; border-radius: 20px; border: 1px solid #ccc; padding: 5px;">
+                <input type="email" id="email" name="email" placeholder="Email" required style="height: 30px; width: 300px; border-radius: 20px; border: 1px solid #ccc; padding: 5px;">
+                <label for="username" style="font-weight: bolder; color: #ffffff;">Username:</label>
+                <input type="text" id="username" name="username" placeholder="Username" required style="height: 30px; width: 300px; border-radius: 20px; border: 1px solid #ccc; padding: 5px;">
                 <label for="password" style="font-weight: bolder; color: #ffffff;">Password:</label>
-                <input type="password" id="password" placeholder="Password" required style="height: 30px; width: 300px; border-radius: 20px; border: 1px solid #ccc; padding: 5px;">
+                <input type="password" id="password" name="password" placeholder="Password" required style="height: 30px; width: 300px; border-radius: 20px; border: 1px solid #ccc; padding: 5px;">
+                <button type="submit" class="button" style="background-color: #410202; margin-top: 20px; color: #fff; font-weight: bolder; width: 160px; height: 40px; border-radius: 10px; border: none;">Sign Up</button>
             </form>
-            <button type="submit" class="button"
-                style="background-color: #410202;
-                margin-top: 20px;
-                 color: #fff;
-                   font-weight: bolder;
-                   width: 160px;
-                   height: 40px;
-                   border-radius: 10px;
-                   border: none;
-                  "><a href="studentDashboard.html" style="color: #fff; text-decoration: none;">Sign Up</a></button>
+            <p id="auth-message" role="alert"></p>
         </div>
+        <script>
+          document.getElementById('signup-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const nameParts = event.target.name.value.trim().split(/\s+/);
+            try {
+              await apiRequest('auth/register/', { method: 'POST', body: JSON.stringify({ username: event.target.username.value, password: event.target.password.value, email: event.target.email.value, identifier: event.target.identifier.value, first_name: nameParts.shift() || '', last_name: nameParts.join(' ') }) });
+              window.location.href = 'studentDashboard.html';
+            } catch (error) { showAuthMessage(error.message); }
+          });
+        </script>
     </body>
 </html>
