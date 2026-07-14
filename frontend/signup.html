@@ -13,7 +13,7 @@
             <form id="signup-form" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
                 <label for="name" style="font-weight: bolder; color: #ffffff;">Name:</label>
                 <input type="text" id="name" name="name" placeholder="Name" required style="height: 30px; width: 300px; border-radius: 20px; border: 1px solid #ccc; padding: 5px;">
-                 <label for="student-id" style="font-weight: bolder; color: #ffffff;">Student ID/Staff ID:</label>
+                 <label for="student-id" style="font-weight: bolder; color: #ffffff;">Student registration number:</label>
                 <input type="text" id="student-id" name="identifier" placeholder="Student ID" required style="height: 30px; width: 300px; border-radius: 20px; border: 1px solid #ccc; padding: 5px;">
                 
                 <label for="email" style="font-weight: bolder; color: #ffffff;">Email:</label>
@@ -31,7 +31,11 @@
             event.preventDefault();
             const nameParts = event.target.name.value.trim().split(/\s+/);
             try {
-              await apiRequest('auth/register/', { method: 'POST', body: JSON.stringify({ username: event.target.username.value, password: event.target.password.value, email: event.target.email.value, identifier: event.target.identifier.value, first_name: nameParts.shift() || '', last_name: nameParts.join(' ') }) });
+              const username = event.target.username.value;
+              const password = event.target.password.value;
+              await apiRequest('register/', { method: 'POST', body: JSON.stringify({ username, password, email: event.target.email.value, registration_number: event.target.identifier.value, role: 'STUDENT', first_name: nameParts.shift() || '', last_name: nameParts.join(' ') }) });
+              const tokens = await apiRequest('token/', { method: 'POST', body: JSON.stringify({ username, password }) });
+              localStorage.setItem('access_token', tokens.access); localStorage.setItem('refresh_token', tokens.refresh);
               window.location.href = 'studentDashboard.html';
             } catch (error) { showAuthMessage(error.message); }
           });
