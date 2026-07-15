@@ -1,4 +1,181 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Grading | Lecturer Portal</title><link rel="stylesheet" href="main.css"><script src="api.js" defer></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></head><body>
-<aside class="portal-sidebar"><div class="portal-brand"><img src="logo manipal.png" class="logo" alt="Manipal EMS logo"><div><h2>Manipal EMS</h2><p class="portal-role">Lecturer portal</p></div></div><nav class="portal-nav"><a href="lecturerDashboard.html"><i class="fa-solid fa-table-columns"></i>Dashboard</a><a href="lecturerExams.html"><i class="fa-solid fa-file-circle-plus"></i>My Exams</a><a class="active" href="lecturerGrading.html"><i class="fa-solid fa-square-poll-vertical"></i>Grading</a><a href="lecturerNotifications.html"><i class="fa-solid fa-bell"></i>Notifications</a><a href="lecturerProfile.html"><i class="fa-solid fa-user"></i>Profile</a><a href="lecturerSettings.html"><i class="fa-solid fa-gear"></i>Settings</a></nav><a class="portal-logout" href="home.html">Logout</a></aside>
-<header class="portal-header"><h1>Grading</h1><div class="portal-header-actions"><a href="lecturerProfile.html"><i class="fa-solid fa-user"></i> <span data-current-user>current user</span></a></div></header><main class="portal-main"><section class="portal-panel"><h2>Submissions awaiting review</h2><table class="portal-table"><thead><tr><th>Student</th><th>Assessment</th><th>Submitted</th><th>Action</th></tr></thead><tbody><tr><td>Aarav Nair</td><td>DSA Midterm</td><td>14 Jul 2026</td><td><button class="portal-button">Grade</button></td></tr><tr><td>Meera Iyer</td><td>DSA Midterm</td><td>14 Jul 2026</td><td><button class="portal-button">Grade</button></td></tr><tr><td>Rohan Das</td><td>DBMS Quiz</td><td>13 Jul 2026</td><td><button class="portal-button">Grade</button></td></tr></tbody></table></section></main></body></html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Grading | Lecturer Portal</title>
+	<link rel="stylesheet" href="main.css">
+	<script src="api.js" defer></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+	<aside class="portal-sidebar">
+		<div class="portal-brand">
+			<img src="logo manipal.png" class="logo" alt="Manipal EMS logo">
+			<div>
+				<h2>Manipal EMS</h2>
+				<p class="portal-role">Lecturer portal</p>
+			</div>
+		</div>
+		<nav class="portal-nav">
+			<a href="lecturerDashboard.html"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
+			<a href="lecturerExams.html"><i class="fa-solid fa-file-circle-plus"></i>My Exams</a>
+			<a class="active" href="lecturerGrading.html"><i class="fa-solid fa-square-poll-vertical"></i>Grading</a>
+			<a href="lecturerNotifications.html"><i class="fa-solid fa-bell"></i>Notifications</a>
+			<a href="lecturerProfile.html"><i class="fa-solid fa-user"></i>Profile</a>
+			<a href="lecturerSettings.html"><i class="fa-solid fa-gear"></i>Settings</a>
+		</nav>
+		<a class="portal-logout" href="home.html">Logout</a>
+	</aside>
+	<header class="portal-header">
+		<h1>Grading</h1>
+		<div class="portal-header-actions"><a href="lecturerProfile.html"><i class="fa-solid fa-user"></i> <span data-current-user>current user</span></a></div>
+	</header>
+	<main class="portal-main">
+		<section class="portal-panel" id="submissions-panel">
+			<h2>Submissions awaiting review</h2>
+			<table class="portal-table">
+				<thead><tr><th>Student</th><th>Assessment</th><th>Submitted</th><th>Action</th></tr></thead>
+				<tbody id="submissions-body"><tr><td colspan="4">Loading…</td></tr></tbody>
+			</table>
+		</section>
+
+		<section class="portal-panel" id="grading-detail" style="display:none;">
+			<h2 id="grading-title">Grade submission</h2>
+			<p id="grading-meta" style="color:#6d6464;margin-top:0;margin-bottom:12px;"></p>
+			<div id="answers-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+			<div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+				<button id="save-all" class="portal-button" type="button">Save marks</button>
+				<button id="finalize" class="portal-button" type="button">Finalize and compute result</button>
+				<button id="back-to-list" class="portal-button" type="button">Back to list</button>
+			</div>
+			<p id="grading-message" role="status" style="margin-top:8px;color:#410202;"></p>
+		</section>
+	</main>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', async () => {
+			const submissionsBody = document.querySelector('#submissions-body');
+			const gradingDetail = document.querySelector('#grading-detail');
+			const answersList = document.querySelector('#answers-list');
+			const gradingTitle = document.querySelector('#grading-title');
+			const gradingMeta = document.querySelector('#grading-meta');
+			const gradingMessage = document.querySelector('#grading-message');
+			const saveAllBtn = document.querySelector('#save-all');
+			const finalizeBtn = document.querySelector('#finalize');
+			const backBtn = document.querySelector('#back-to-list');
+
+			const params = new URLSearchParams(location.search);
+			const attemptId = params.get('attempt');
+
+			const loadList = async () => {
+				try {
+					const attempts = await apiRequest('student-exams/');
+					const rows = attempts.filter(a => a.status !== 'IN_PROGRESS').length ? attempts.filter(a => a.status !== 'IN_PROGRESS') : attempts;
+					if (!rows.length) {
+						submissionsBody.innerHTML = '<tr><td colspan="4">No submissions awaiting review.</td></tr>';
+						return;
+					}
+					submissionsBody.innerHTML = rows.map(a => `
+						<tr>
+							<td>${text(a.student_name)}</td>
+							<td>${text(a.exam_title)}</td>
+							<td>${text(a.submitted_at || a.started_at)}</td>
+							<td><a class="portal-button" href="lecturerGrading.html?attempt=${a.id}">Grade</a></td>
+						</tr>
+					`).join('');
+				} catch (err) {
+					submissionsBody.innerHTML = `<tr><td colspan="4">${err.message}</td></tr>`;
+				}
+			};
+
+			const renderAttempt = async id => {
+				try {
+					gradingMessage.textContent = '';
+					const attempt = await apiRequest(`student-exams/${id}/`);
+					gradingDetail.style.display = 'block';
+					document.querySelector('#submissions-panel').style.display = 'none';
+					gradingTitle.textContent = `Grade: ${attempt.student_name} — ${attempt.exam_title}`;
+					gradingMeta.textContent = `Started: ${attempt.started_at || '—'} · Submitted: ${attempt.submitted_at || '—'}`;
+					answersList.innerHTML = '';
+					if (!attempt.answers.length) answersList.innerHTML = '<p>No answers submitted.</p>';
+					for (const ans of attempt.answers) {
+						const container = document.createElement('div');
+						container.style.border = '1px solid #e8e8e8';
+						container.style.padding = '12px';
+						container.style.borderRadius = '8px';
+						const studentAnswer = typeof ans.student_answer === 'object' ? JSON.stringify(ans.student_answer) : String(ans.student_answer);
+						// question may be an ID or nested object
+						let questionData = ans.question;
+						if (typeof questionData === 'number' || typeof questionData === 'string') {
+							try { questionData = await apiRequest(`questions/${questionData}/`); } catch (e) { questionData = { question: 'Unknown question', marks: 0 }; }
+						}
+						container.innerHTML = `
+							<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+								<strong>${text(questionData.question)}</strong>
+								<div style="text-align:right;">
+									<div style="font-size:13px;color:#6d6464">Max: ${text(questionData.marks)}</div>
+								</div>
+							</div>
+							<div style="margin-top:8px;white-space:pre-wrap;background:#fafafa;padding:10px;border-radius:6px;border:1px solid #f0f0f0;">${text(studentAnswer)}</div>
+							<div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+								<label style="display:flex;gap:6px;align-items:center;">Marks awarded <input name="marks_${ans.id}" type="number" min="0" step="0.01" value="${ans.marks_awarded}" style="width:120px;padding:6px;border:1px solid #ddd;border-radius:6px;"></label>
+								<label style="flex:1;display:flex;flex-direction:column;">Remarks <textarea name="remarks_${ans.id}" style="padding:8px;border:1px solid #ddd;border-radius:6px;min-height:60px;">${text(ans.remarks || '')}</textarea></label>
+								<button type="button" class="portal-button" data-answer-id="${ans.id}">Save</button>
+							</div>
+						`;
+						// Save button handler
+						container.querySelector('button[data-answer-id]')?.addEventListener('click', async () => {
+							const aid = ans.id;
+							const marks = container.querySelector(`[name=marks_${aid}]`).value;
+							const remarks = container.querySelector(`[name=remarks_${aid}]`).value;
+							try {
+								await apiRequest(`answers/${aid}/mark/`, { method: 'POST', body: JSON.stringify({ marks_awarded: marks, remarks }) });
+								gradingMessage.textContent = 'Marks saved.';
+							} catch (e) { gradingMessage.textContent = e.message; }
+						});
+						answersList.appendChild(container);
+					}
+				} catch (e) {
+					gradingMessage.textContent = e.message;
+				}
+			};
+
+			saveAllBtn?.addEventListener('click', async () => {
+				const buttons = Array.from(answersList.querySelectorAll('button[data-answer-id]'));
+				if (!buttons.length) { gradingMessage.textContent = 'Nothing to save.'; return; }
+				try {
+					gradingMessage.textContent = 'Saving marks...';
+					for (const btn of buttons) btn.click();
+					gradingMessage.textContent = 'All marks saved.';
+				} catch (e) { gradingMessage.textContent = e.message; }
+			});
+
+			finalizeBtn?.addEventListener('click', async () => {
+				if (!attemptId) return;
+				try {
+					gradingMessage.textContent = 'Finalizing and computing result...';
+					const res = await apiRequest(`student-exams/${attemptId}/submit/`, { method: 'POST' });
+					gradingMessage.textContent = `Result saved. Score: ${res.score}`;
+					// Hide detail and refresh list
+					gradingDetail.style.display = 'none';
+					document.querySelector('#submissions-panel').style.display = '';
+					await loadList();
+				} catch (e) { gradingMessage.textContent = e.message; }
+			});
+
+			backBtn?.addEventListener('click', () => {
+				gradingDetail.style.display = 'none';
+				document.querySelector('#submissions-panel').style.display = '';
+				history.replaceState({}, '', 'lecturerGrading.html');
+			});
+
+			if (attemptId) {
+				await renderAttempt(attemptId);
+			} else {
+				await loadList();
+			}
+		});
+	</script>
+</body>
+</html>

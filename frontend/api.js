@@ -7,7 +7,11 @@ async function apiRequest(path, options = {}) {
   if (token) headers.Authorization = `Bearer ${token}`;
   const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
   const body = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(Object.values(body).flat().join(' ') || body.detail || 'Request failed.');
+  if (!response.ok) {
+    console.error('API request failed', { path, status: response.status, body });
+    const message = typeof body === 'object' && Object.keys(body).length ? JSON.stringify(body) : (body.detail || 'Request failed.');
+    throw new Error(message);
+  }
   return body;
 }
 
@@ -21,11 +25,18 @@ async function currentUser() {
   return user;
 }
 
+function mediaUrl(path) {
+  return path ? new URL(path, API_BASE).href : '';
+}
+
 async function renderPage() {
   const page = decodeURIComponent(location.pathname.split('/').pop()).toLowerCase();
-  if (!['studentdashboard.html','my exams.html','results.html','notifications.html','profile.html','lecturerdashboard.html','lecturerexams.html','lecturergrading.html','lecturernotifications.html','lecturerprofile.html','admindashboard.html'].includes(page)) return;
+  if (!['studentdashboard.html','my exams.html','takeexam.html','results.html','notifications.html','profile.html','lecturerdashboard.html','lecturerexams.html','lecturergrading.html','lecturernotifications.html','lecturerprofile.html','admindashboard.html'].includes(page)) return;
   try {
     const user = await currentUser();
+    if (page === 'admindashboard.html' && !document.querySelector('[href="adminUsers.html"]')) {
+      document.querySelector('.portal-nav')?.insertAdjacentHTML('beforeend', '<a href="adminUsers.html"><i class="fa-solid fa-user-gear"></i>Users &amp; alerts</a>');
+    }
     if (page.includes('dashboard')) {
       const data = await apiRequest('dashboard/');
       const cards = Object.entries(data).map(([label, value]) => `<article class="portal-card"><p>${text(label.replaceAll('_',' '))}</p><strong>${text(value)}</strong></article>`).join('');
@@ -35,10 +46,74 @@ async function renderPage() {
       const exams = await apiRequest('exams/');
       const body = document.querySelector('tbody');
       if (body) body.innerHTML = page === 'my exams.html'
-        ? rows(exams, e => `<tr><td>${text(e.course_name)}</td><td>${text(dateTime(e))}</td><td>—</td><td>${text(e.duration)} minutes</td><td><span class="student-status">${text(e.status)}</span></td></tr>`, 5)
+        ? rows(exams, e => `<tr><td>${text(e.course_name)}</td><td>${text(dateTime(e))}</td><td>—</td><td>${text(e.duration)} minutes</td><td><span class="student-status">${text(e.status)}</span></td><td>${e.status === 'PUBLISHED' ? `<button class="portal-button" data-id="${e.id}" data-action="start">Start</button>` : '—'}</td></tr>`, 6)
         : rows(exams, e => `<tr><td>${text(e.title)}</td><td>${text(dateTime(e))}</td><td>${text(e.course_name)}</td><td><span class="portal-badge">${text(e.status)}</span></td></tr>`, 4);
       const instructions = document.querySelector('[data-exam-instructions]');
       if (instructions) instructions.textContent = exams[0]?.instructions || 'No examination instructions have been published yet.';
+      if (page === 'my exams.html') {
+        body.querySelectorAll('[data-action="start"]').forEach(button => button.addEventListener('click', () => {
+          const examId = button.dataset.id;
+          location.href = `takeExam.html?exam=${examId}`;
+        }));
+      }
+    }
+    if (page === 'takeexam.html') {
+      const params = new URLSearchParams(location.search);
+      const examId = params.get('exam');
+      const error = document.querySelector('#exam-error');
+      const title = document.querySelector('#exam-title');
+      const info = document.querySelector('#exam-info');
+      const instructions = document.querySelector('#exam-instructions');
+      const questionList = document.querySelector('#question-list');
+      const form = document.querySelector('#exam-form');
+      if (!examId) {
+        if (error) error.textContent = 'No exam selected.';
+        return;
+      }
+      const exam = await apiRequest(`exams/${examId}/`);
+      const questions = await apiRequest(`questions/?exam=${examId}`);
+      if (title) title.textContent = exam.title;
+      if (info) info.textContent = `${exam.course_name} · ${dateTime(exam)} · ${exam.duration} minutes`;
+      if (instructions) instructions.textContent = exam.instructions || 'No instructions have been published for this exam yet.';
+      if (questionList) {
+        if (!questions.length) {
+          questionList.innerHTML = '<p>No questions are available for this exam.</p>';
+        } else {
+          questionList.innerHTML = questions.map(q => {
+            const input = q.options && q.options.length
+              ? q.options.map(opt => `<label><input type="radio" name="question_${q.id}" value="${text(opt)}"> ${text(opt)}</label>`).join('')
+              : `<textarea name="question_${q.id}" class="student-answer" rows="8" placeholder="Your answer"></textarea>`;
+            return `<div class="question-block"><h3>${text(q.question_type)}</h3><p>${text(q.question)}</p>${input}</div>`;
+          }).join('');
+        }
+      }
+      if (form) {
+        form.addEventListener('submit', async event => {
+          event.preventDefault();
+          try {
+            const attempt = await apiRequest('student-exams/', {
+              method: 'POST',
+              body: JSON.stringify({ exam: examId }),
+            });
+            for (const question of questions) {
+              const answerValue = question.options?.length
+                ? document.querySelector(`input[name="question_${question.id}"]:checked`)?.value || ''
+                : form.elements[`question_${question.id}`]?.value || '';
+              await apiRequest('answers/', {
+                method: 'POST',
+                body: JSON.stringify({ student_exam: attempt.id, question: question.id, student_answer: answerValue }),
+              });
+            }
+            await apiRequest(`student-exams/${attempt.id}/submit/`, { method: 'POST' });
+            alert('Exam submitted successfully.');
+            location.href = 'my exams.html';
+          } catch (submitError) {
+            if (error) {
+              error.textContent = submitError.message || 'Exam submission failed.';
+            }
+          }
+        });
+      }
     }
     if (page === 'admindashboard.html') {
       const exams = await apiRequest('exams/'); const body = document.querySelector('tbody');
@@ -61,9 +136,19 @@ async function renderPage() {
       if (list) list.innerHTML = notices.length ? notices.map(n => `<li><strong>${text(n.title)}</strong><small>${text(n.message)}</small></li>`).join('') : '<p>No notifications yet.</p>';
     }
     if (page.includes('profile')) {
+      const heading = document.querySelector('.student-profile h2, .portal-panel h2');
+      if (heading) heading.textContent = `${user.first_name || ''} ${user.last_name || user.username}`.trim();
+      const avatar = document.querySelector('[data-profile-image]');
+      if (avatar && user.profile_picture) { avatar.src = mediaUrl(user.profile_picture); avatar.hidden = false; }
       const table = document.querySelector('table tbody');
-      if (table) table.innerHTML = [['Username',user.username],['Email',user.email],['Role',user.role],['Registration number',user.registration_number],['Staff number',user.staff_number],['Phone',user.phone]].filter(([,v]) => v).map(([k,v]) => `<tr><th>${k}</th><td>${text(v)}</td></tr>`).join('');
+        if (table) table.innerHTML = [['Username',user.username],['Email',user.email],['Role',user.role],['Registration number',user.registration_number],['Staff number',user.staff_number],['Phone',user.phone]].filter(([,v]) => v).map(([k,v]) => `<tr><th>${k}</th><td>${text(v)}</td></tr>`).join('');
     }
+    const imageForm = document.querySelector('#profile-image-form');
+    if (imageForm) imageForm.addEventListener('submit', async event => {
+      event.preventDefault(); const file = imageForm.profile_picture.files[0]; if (!file) return;
+      const data = new FormData(); data.append('profile_picture', file);
+      try { await apiRequest('profile/', { method: 'PATCH', body: data }); location.reload(); } catch (error) { alert(error.message); }
+    });
   } catch (error) { console.error(error); document.querySelectorAll('[data-current-user]').forEach(node => node.textContent = 'Sign in required'); }
 }
 document.addEventListener('DOMContentLoaded', renderPage);

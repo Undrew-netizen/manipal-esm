@@ -22,6 +22,8 @@
                 <input type="text" id="username" name="username" placeholder="Username" required style="height: 30px; width: 300px; border-radius: 20px; border: 1px solid #ccc; padding: 5px;">
                 <label for="password" style="font-weight: bolder; color: #ffffff;">Password:</label>
                 <input type="password" id="password" name="password" placeholder="Password" required style="height: 30px; width: 300px; border-radius: 20px; border: 1px solid #ccc; padding: 5px;">
+                <label for="profile-picture" style="font-weight: bolder; color: #ffffff;">Profile picture (optional):</label>
+                <input type="file" id="profile-picture" name="profile_picture" accept="image/*" style="color: #ffffff;">
                 <button type="submit" class="button" style="background-color: #410202; margin-top: 20px; color: #fff; font-weight: bolder; width: 160px; height: 40px; border-radius: 10px; border: none;">Sign Up</button>
             </form>
             <p id="auth-message" role="alert"></p>
@@ -29,15 +31,20 @@
         <script>
           document.getElementById('signup-form').addEventListener('submit', async (event) => {
             event.preventDefault();
-            const nameParts = event.target.name.value.trim().split(/\s+/);
+            const form = event.currentTarget;
+            const nameParts = form.elements.name.value.trim().split(/\s+/);
             try {
-              const username = event.target.username.value;
-              const password = event.target.password.value;
-              await apiRequest('register/', { method: 'POST', body: JSON.stringify({ username, password, email: event.target.email.value, registration_number: event.target.identifier.value, role: 'STUDENT', first_name: nameParts.shift() || '', last_name: nameParts.join(' ') }) });
-              const tokens = await apiRequest('token/', { method: 'POST', body: JSON.stringify({ username, password }) });
+              const username = form.elements.username.value.trim();
+              const password = form.elements.password.value;
+              const registration = new FormData();
+              registration.append('username', username); registration.append('password', password); registration.append('email', form.elements.email.value.trim());
+              registration.append('registration_number', form.elements.identifier.value.trim()); registration.append('role', 'STUDENT');
+              registration.append('first_name', nameParts.shift() || ''); registration.append('last_name', nameParts.join(' '));
+              if (form.elements.profile_picture.files[0]) registration.append('profile_picture', form.elements.profile_picture.files[0]);
+              const tokens = await apiRequest('register/', { method: 'POST', body: registration });
               localStorage.setItem('access_token', tokens.access); localStorage.setItem('refresh_token', tokens.refresh);
-              window.location.href = 'studentDashboard.html';
-            } catch (error) { showAuthMessage(error.message); }
+              window.location.assign('studentDashboard.html');
+            } catch (error) { document.getElementById('auth-message').textContent = error.message; }
           });
         </script>
     </body>

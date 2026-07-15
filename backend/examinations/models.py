@@ -10,6 +10,7 @@ class Exam(models.Model):
     course = models.ForeignKey("courses.Course", on_delete=models.PROTECT, related_name="exams")
     lecturer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="created_exams")
     instructions = models.TextField(blank=True)
+    document = models.FileField(upload_to="exam_documents/", null=True, blank=True)
     exam_date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()

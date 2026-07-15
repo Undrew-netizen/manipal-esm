@@ -1,4 +1,484 @@
-<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>My Exams | Lecturer Portal</title><link rel="stylesheet" href="main.css"><script src="api.js" defer></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></head><body>
-<aside class="portal-sidebar"><div class="portal-brand"><img src="logo manipal.png" class="logo" alt="Manipal EMS logo"><div><h2>Manipal EMS</h2><p class="portal-role">Lecturer portal</p></div></div><nav class="portal-nav"><a href="lecturerDashboard.html"><i class="fa-solid fa-table-columns"></i>Dashboard</a><a class="active" href="lecturerExams.html"><i class="fa-solid fa-file-circle-plus"></i>My Exams</a><a href="lecturerGrading.html"><i class="fa-solid fa-square-poll-vertical"></i>Grading</a><a href="lecturerNotifications.html"><i class="fa-solid fa-bell"></i>Notifications</a><a href="lecturerProfile.html"><i class="fa-solid fa-user"></i>Profile</a><a href="lecturerSettings.html"><i class="fa-solid fa-gear"></i>Settings</a></nav><a class="portal-logout" href="home.html">Logout</a></aside>
-<header class="portal-header"><h1>My Exams</h1><div class="portal-header-actions"><a href="lecturerProfile.html"><i class="fa-solid fa-user"></i> <span data-current-user>current user</span></a></div></header><main class="portal-main"><p><a class="portal-button" href="#create-exam"><i class="fa-solid fa-plus"></i> Create exam</a></p><section class="portal-panel"><h2>Scheduled examinations</h2><table class="portal-table"><thead><tr><th>Exam</th><th>Date &amp; time</th><th>Venue</th><th>Status</th></tr></thead><tbody><tr><td>Data Structures &amp; Algorithms</td><td>15 Jul 2026, 9:00 AM</td><td>Lecture Hall A</td><td><span class="portal-badge">Published</span></td></tr><tr><td>Database Management Systems</td><td>15 Jul 2026, 3:00 PM</td><td>Lecture Hall B</td><td><span class="portal-badge">Published</span></td></tr><tr><td>Operating Systems</td><td>22 Jul 2026, 10:00 AM</td><td>Computer Lab 2</td><td><span class="portal-badge">Draft</span></td></tr></tbody></table></section></main></body></html>
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exams | Lecturer Portal</title>
+    <link rel="stylesheet" href="main.css">
+    <script src="api.js" defer></script>
+</head>
+<body>
+    <aside class="portal-sidebar">
+        <div class="portal-brand">
+            <img src="logo manipal.png" class="logo" alt="Manipal EMS logo">
+            <div>
+                <h2>Manipal EMS</h2>
+                <p class="portal-role">Lecturer portal</p>
+            </div>
+        </div>
+        <nav class="portal-nav">
+            <a href="lecturerDashboard.html">Dashboard</a>
+            <a class="active" href="lecturerExams.html">My Exams</a>
+            <a href="lecturerGrading.html">Grading</a>
+            <a href="lecturerNotifications.html">Notifications</a>
+            <a href="lecturerProfile.html">Profile</a>
+        </nav>
+        <a class="portal-logout" href="home.html">Logout</a>
+    </aside>
+    <header class="portal-header">
+        <h1>Create and publish exams</h1>
+        <div class="portal-header-actions"><span data-current-user>current user</span></div>
+    </header>
+    <main class="portal-main">
+        <p id="exam-message" role="alert"></p>
+        <section class="portal-panel">
+            <h2>1. Create a draft exam</h2>
+            <form id="exam-form" style="display:grid;gap:10px;max-width:720px">
+                <input name="title" placeholder="Exam title" required>
+                <select name="course" required>
+                    <option value="">Select an assigned course</option>
+                </select>
+                <textarea name="instructions" placeholder="Instructions for students"></textarea>
+                <label>Documented exam / paper (optional)
+                    <input name="document" type="file" accept=".pdf,.doc,.docx,.txt">
+                </label>
+                <label>Exam date <input name="exam_date" type="date" required></label>
+                <label>Start time <input name="start_time" type="time" required></label>
+                <label>End time <input name="end_time" type="time" required></label>
+                <label>Duration (minutes) <input name="duration" type="number" min="1" required></label>
+                <label>Passing marks <input name="passing_marks" type="number" min="0" step="0.01" value="0" required></label>
+                <button class="portal-button" type="submit">Create draft</button>
+            </form>
+        </section>
+        <section class="portal-panel" id="question-section">
+            <h2>2. Add questions</h2>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <p id="selected-exam-title">Add questions before creating the draft exam.</p>
+                <div id="selected-exam-actions">
+                    <button id="edit-exam-details" class="portal-button" type="button" hidden>Edit details</button>
+                    <button id="delete-exam-draft" class="portal-button" type="button" hidden>Delete draft</button>
+                </div>
+            </div>
+            <form id="question-form" style="display:grid;gap:10px;max-width:720px">
+                <select name="question_type">
+                    <option value="MCQ">Multiple choice</option>
+                    <option value="ESSAY">Essay</option>
+                    <option value="TRUE_FALSE">True / False</option>
+                    <option value="FILL_BLANK">Fill in the blank</option>
+                    <option value="SHORT_ANSWER">Short answer</option>
+                    <option value="MATCHING">Matching</option>
+                </select>
+                <textarea name="question" placeholder="Question text" required></textarea>
+                <label>Marks <input name="marks" type="number" min="0.01" step="0.01" required></label>
+                <input name="difficulty" placeholder="Difficulty (Easy, Medium, Hard)" type="text">
+                <textarea name="options" placeholder="Options, one per line"></textarea>
+                <textarea name="correct_answer" placeholder="Correct answer(s), one per line"></textarea>
+                <textarea name="explanation" placeholder="Explanation for answer (optional)"></textarea>
+                <label>Question image <input name="image" type="file" accept="image/*"></label>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                    <button class="portal-button" type="submit">Add question to draft</button>
+                    <button id="cancel-question-edit" class="portal-button" type="button" hidden>Cancel edit</button>
+                </div>
+            </form>
+            <div id="draft-questions-wrapper" style="margin-top:16px;">
+                <h3>Draft questions</h3>
+                <ul id="draft-questions-list" style="list-style:none;padding:0;margin:0;"></ul>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+                <button id="publish-exam" class="portal-button" type="button" hidden>Publish exam</button>
+                <button id="add-multiple-questions" class="portal-button" type="button" hidden>Add multiple questions</button>
+            </div>
+            <div id="multi-questions-wrapper" style="margin-top:16px; display:none; max-width:720px;">
+                <h3>Add several questions</h3>
+                <p style="color:#6d6464;margin:0 0 8px;">Use the + button to add rows. Each row needs a question and marks. Other fields (difficulty, options, explanation) can be edited after adding.</p>
+                <div id="multi-questions-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+                <div style="display:flex;gap:8px;margin-top:8px;">
+                    <button id="multi-add-row" class="portal-button" type="button">+ Add row</button>
+                    <button id="multi-submit" class="portal-button" type="button">Submit all questions</button>
+                    <button id="multi-cancel" class="portal-button" type="button">Cancel</button>
+                </div>
+            </div>
+        </section>
+        <section class="portal-panel">
+            <h2>My examinations</h2>
+            <table class="portal-table">
+                <thead><tr><th>Exam</th><th>Course</th><th>Date</th><th>Document</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </section>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            let exam = null;
+            let editingQuestionId = null;
+            const draftQuestions = [];
+            const message = document.querySelector('#exam-message');
+            const selectedExam = document.querySelector('#selected-exam-title');
+            const editExamDetailsButton = document.querySelector('#edit-exam-details');
+            const deleteExamDraftButton = document.querySelector('#delete-exam-draft');
+            const questionSection = document.querySelector('#question-section');
+            const publishExamButton = document.querySelector('#publish-exam');
+            const examsBody = document.querySelector('table tbody');
+            const questionForm = document.querySelector('#question-form');
+            const examForm = document.querySelector('#exam-form');
+            const draftQuestionsList = document.querySelector('#draft-questions-list');
+            const cancelQuestionEditButton = document.querySelector('#cancel-question-edit');
+            const questionSubmitButton = questionForm?.querySelector('button[type="submit"]');
+            const examSubmitButton = examForm?.querySelector('button[type="submit"]');
+
+            const lines = value => value.split('\n').map(v => v.trim()).filter(Boolean);
+            const setMessage = text => { if (message) message.textContent = text; };
+
+            const examFields = ['title','course','instructions','exam_date','start_time','end_time','duration','passing_marks'];
+            const setExamFormState = () => {
+                if (!exam || exam.status !== 'DRAFT') {
+                    if (examSubmitButton) examSubmitButton.textContent = 'Create draft';
+                    return;
+                }
+                if (examSubmitButton) examSubmitButton.textContent = 'Update draft';
+            };
+
+            const resetQuestionEdit = () => {
+                editingQuestionId = null;
+                if (questionSubmitButton) questionSubmitButton.textContent = 'Add question to draft';
+                if (cancelQuestionEditButton) cancelQuestionEditButton.hidden = true;
+                questionForm?.reset();
+            };
+
+            const populateExamForm = examData => {
+                if (!examForm || !examData) return;
+                examFields.forEach(name => {
+                    const field = examForm.elements[name];
+                    if (!field) return;
+                    field.value = examData[name] ?? '';
+                });
+                setExamFormState();
+            };
+
+            const populateQuestionForm = q => {
+                if (!questionForm) return;
+                questionForm.elements.question_type.value = q.question_type || 'MCQ';
+                questionForm.elements.question.value = q.question || '';
+                questionForm.elements.marks.value = q.marks || '';
+                questionForm.elements.difficulty.value = q.difficulty || '';
+                questionForm.elements.options.value = Array.isArray(q.options) ? q.options.join('\n') : '';
+                questionForm.elements.correct_answer.value = Array.isArray(q.correct_answer) ? q.correct_answer.join('\n') : '';
+                questionForm.elements.explanation.value = q.explanation || '';
+                if (questionSubmitButton) questionSubmitButton.textContent = 'Save question changes';
+                if (cancelQuestionEditButton) cancelQuestionEditButton.hidden = false;
+            };
+
+            const renderDraftQuestions = () => {
+                if (!draftQuestionsList) return;
+                if (!draftQuestions.length) {
+                    draftQuestionsList.innerHTML = '<li>No draft questions added yet.</li>';
+                    return;
+                }
+                draftQuestionsList.innerHTML = draftQuestions.map((q, index) => `
+                    <li style="margin-bottom:12px; padding:12px; border:1px solid #e0e0e0; border-radius:8px;">
+                        <div><strong>${text(q.question_type)}</strong> · ${text(q.difficulty || 'N/A')}</div>
+                        <div style="margin-top:8px;">${text(typeof q.question === 'string' ? q.question.slice(0, 120) : '')}${typeof q.question === 'string' && q.question.length > 120 ? '…' : ''}</div>
+                        <div style="margin-top:8px;">${text(q.explanation || '')}</div>
+                        <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+                            <button type="button" data-index="${index}" class="portal-button edit-draft">Edit</button>
+                            <button type="button" data-index="${index}" class="portal-button remove-draft">Delete</button>
+                        </div>
+                    </li>
+                `).join('');
+                draftQuestionsList.querySelectorAll('.remove-draft').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const index = Number(button.dataset.index);
+                        const question = draftQuestions[index];
+                        if (question.id) {
+                            apiRequest(`questions/${question.id}/`, { method: 'DELETE' }).then(() => {
+                                draftQuestions.splice(index, 1);
+                                renderDraftQuestions();
+                                setMessage('Draft question deleted.');
+                            }).catch(error => setMessage(error.message));
+                        } else {
+                            draftQuestions.splice(index, 1);
+                            renderDraftQuestions();
+                            setMessage('Draft question removed from the local list.');
+                        }
+                    });
+                });
+                draftQuestionsList.querySelectorAll('.edit-draft').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const index = Number(button.dataset.index);
+                        const question = draftQuestions[index];
+                        editingQuestionId = question.id || null;
+                        populateQuestionForm(question);
+                    });
+                });
+            };
+
+            if (questionSection) {
+                questionSection.hidden = true;
+            }
+            const addMultipleButton = document.querySelector('#add-multiple-questions');
+            if (addMultipleButton) addMultipleButton.hidden = true;
+
+            const loadCourses = async () => {
+                try {
+                    const courses = await apiRequest('courses/');
+                    document.querySelector('[name=course]').insertAdjacentHTML('beforeend', courses.map(c => `\n                        <option value="${c.id}">${text(c.course_code)} — ${text(c.course_name)}</option>\n                    `).join(''));
+                } catch (error) {
+                    setMessage(error.message);
+                }
+            };
+
+            const loadExamForEdit = async examId => {
+                try {
+                    const examData = await apiRequest(`exams/${examId}/`);
+                    if (examData.status !== 'DRAFT') {
+                        setMessage('Only draft exams can be edited.');
+                        return;
+                    }
+                    exam = examData;
+                    selectedExam.textContent = `Editing draft exam: ${exam.title}`;
+                    questionSection.hidden = false;
+                    publishExamButton.hidden = false;
+                    if (addMultipleButton) addMultipleButton.hidden = false;
+                    if (editExamDetailsButton) editExamDetailsButton.hidden = false;
+                    if (deleteExamDraftButton) deleteExamDraftButton.hidden = false;
+                    populateExamForm(exam);
+                    await loadExamQuestions();
+                } catch (error) {
+                    setMessage(error.message);
+                }
+            };
+
+            const loadExams = async () => {
+                try {
+                    const exams = await apiRequest('exams/');
+                    if (examsBody) {
+                        examsBody.innerHTML = exams.length
+                            ? exams.map(e => `\n                                <tr>\n                                    <td>${text(e.title)}</td>\n                                    <td>${text(e.course_name)}</td>\n                                    <td>${text(e.exam_date)}</td>\n                                    <td>${e.document ? `<a href="${e.document}" target="_blank">View</a>` : '—'}</td>\n                                    <td>${text(e.status)}</td>\n                                    <td>${e.status === 'DRAFT' ? `<button class="portal-button" data-id="${e.id}" data-action="edit">Edit draft</button>` : '—'}</td>\n                                </tr>\n                            `).join('')
+                            : '<tr><td colspan="6">No examinations available.</td></tr>';
+                        examsBody.querySelectorAll('button[data-action="edit"]').forEach(button => {
+                            button.addEventListener('click', () => loadExamForEdit(button.dataset.id));
+                        });
+                    }
+                } catch (error) {
+                    setMessage(error.message);
+                }
+            };
+
+            await loadCourses();
+            await loadExams();
+
+            const loadExamQuestions = async () => {
+                if (!exam) return;
+                try {
+                    const questions = await apiRequest(`questions/?exam=${exam.id}`);
+                    draftQuestions.length = 0;
+                    draftQuestions.push(...questions);
+                    renderDraftQuestions();
+                } catch (error) {
+                    setMessage(error.message);
+                }
+            };
+
+            examForm?.addEventListener('submit', async event => {
+                event.preventDefault();
+                const f = event.target;
+                const data = new FormData();
+                examFields.forEach(name => data.append(name, f.elements[name].value));
+                if (f.elements.document.files[0]) data.append('document', f.elements.document.files[0]);
+                try {
+                    if (exam && exam.id) {
+                        exam = await apiRequest(`exams/${exam.id}/`, { method: 'PATCH', body: data });
+                        selectedExam.textContent = `Editing draft: ${exam.title}`;
+                        setMessage('Draft exam updated.');
+                    } else {
+                        exam = await apiRequest('exams/', { method: 'POST', body: data });
+                        selectedExam.textContent = `Adding questions to: ${exam.title}`;
+                        questionSection.hidden = false;
+                        publishExamButton.hidden = false;
+                        setMessage('Draft exam created. Add questions to the draft list, then publish.');
+                    }
+                    populateExamForm(exam);
+                    await loadExams();
+                    await loadExamQuestions();
+                } catch (error) {
+                    setMessage(error.message);
+                }
+            });
+
+            questionForm?.addEventListener('submit', async event => {
+                event.preventDefault();
+                if (!exam) {
+                    setMessage('Create the exam draft before adding questions.');
+                    return;
+                }
+                const f = event.target;
+                const data = new FormData();
+                data.append('exam', exam.id);
+                data.append('question_type', f.elements.question_type.value);
+                data.append('question', f.elements.question.value);
+                data.append('marks', f.elements.marks.value);
+                data.append('difficulty', f.elements.difficulty.value || '');
+                data.append('options', JSON.stringify(lines(f.elements.options.value)));
+                data.append('correct_answer', JSON.stringify(lines(f.elements.correct_answer.value)));
+                data.append('explanation', f.elements.explanation.value || '');
+                if (f.elements.image.files[0]) data.append('image', f.elements.image.files[0]);
+                try {
+                    let savedQuestion;
+                    if (editingQuestionId) {
+                        savedQuestion = await apiRequest(`questions/${editingQuestionId}/`, { method: 'PATCH', body: data });
+                        const index = draftQuestions.findIndex(q => q.id === editingQuestionId);
+                        if (index !== -1) draftQuestions[index] = savedQuestion;
+                        setMessage('Draft question updated.');
+                    } else {
+                        savedQuestion = await apiRequest('questions/', { method: 'POST', body: data });
+                        draftQuestions.push(savedQuestion);
+                        setMessage('Question added to the draft exam. Add more questions if needed.');
+                    }
+                    renderDraftQuestions();
+                    resetQuestionEdit();
+                    f.reset();
+                } catch (error) {
+                    setMessage(error.message);
+                }
+            });
+
+            cancelQuestionEditButton?.addEventListener('click', () => {
+                resetQuestionEdit();
+                setMessage('Question edit cancelled.');
+            });
+
+            editExamDetailsButton?.addEventListener('click', () => {
+                if (!exam) {
+                    setMessage('Select a draft exam first.');
+                    return;
+                }
+                populateExamForm(exam);
+                examForm.scrollIntoView({ behavior: 'smooth' });
+            });
+
+            deleteExamDraftButton?.addEventListener('click', async () => {
+                if (!exam || !exam.id) {
+                    setMessage('No draft selected to delete.');
+                    return;
+                }
+                if (!confirm('Delete this draft exam and all its draft questions?')) return;
+                try {
+                    await apiRequest(`exams/${exam.id}/`, { method: 'DELETE' });
+                    setMessage('Draft exam deleted.');
+                    exam = null;
+                    draftQuestions.length = 0;
+                    renderDraftQuestions();
+                    selectedExam.textContent = 'Add questions before creating the draft exam.';
+                    questionSection.hidden = true;
+                    publishExamButton.hidden = true;
+                    if (editExamDetailsButton) editExamDetailsButton.hidden = true;
+                    if (deleteExamDraftButton) deleteExamDraftButton.hidden = true;
+                    await loadExams();
+                } catch (error) {
+                    setMessage(error.message);
+                }
+            });
+
+            publishExamButton?.addEventListener('click', async () => {
+                if (!exam) {
+                    setMessage('Create the exam draft before publishing.');
+                    return;
+                }
+                if (!draftQuestions.length) {
+                    setMessage('Add at least one question to the draft before publishing the exam.');
+                    return;
+                    if (editExamDetailsButton) editExamDetailsButton.hidden = true;
+                    if (deleteExamDraftButton) deleteExamDraftButton.hidden = true;
+                    if (addMultipleButton) addMultipleButton.hidden = true;
+                    await apiRequest(`exams/${exam.id}/publish/`, { method: 'POST' });
+                    setMessage('Exam published with draft questions and students notified.');
+                    exam = null;
+                    draftQuestions.length = 0;
+                    renderDraftQuestions();
+                    selectedExam.textContent = 'Add questions before creating the draft exam.';
+                    questionSection.hidden = true;
+                    publishExamButton.hidden = true;
+                    if (addMultipleButton) addMultipleButton.hidden = true;
+                    await loadExams();
+                } catch (error) {
+                    setMessage(error.message);
+                }
+            });
+
+            // Multi-question batch add handlers
+            const multiWrapper = document.querySelector('#multi-questions-wrapper');
+            const multiList = document.querySelector('#multi-questions-list');
+            const multiAddRow = document.querySelector('#multi-add-row');
+            const multiSubmit = document.querySelector('#multi-submit');
+            const multiCancel = document.querySelector('#multi-cancel');
+
+            const createMultiRow = (data = {}) => {
+                const idx = Date.now() + Math.random();
+                const row = document.createElement('div');
+                row.dataset.rowId = idx;
+                row.style.display = 'flex';
+                row.style.gap = '8px';
+                row.style.alignItems = 'center';
+                row.innerHTML = `
+                    <input name="mq_question" placeholder="Question text" style="flex:1; padding:8px;" value="${(data.question||'').replace(/"/g,'&quot;')}">
+                    <input name="mq_marks" placeholder="Marks" type="number" min="0.01" step="0.01" style="width:110px;padding:8px;" value="${data.marks||''}">
+                    <button type="button" class="portal-button mq-remove">Remove</button>
+                `;
+                row.querySelector('.mq-remove').addEventListener('click', () => row.remove());
+                return row;
+            };
+
+            addMultipleButton?.addEventListener('click', () => {
+                if (!exam) { setMessage('Select or create a draft exam first.'); return; }
+                multiWrapper.style.display = multiWrapper.style.display === 'none' ? 'block' : 'none';
+                if (multiWrapper.style.display === 'block' && !multiList.children.length) {
+                    multiList.appendChild(createMultiRow());
+                }
+                multiWrapper.scrollIntoView({ behavior: 'smooth' });
+            });
+
+            multiAddRow?.addEventListener('click', () => multiList.appendChild(createMultiRow()));
+
+            multiCancel?.addEventListener('click', () => { multiList.innerHTML = ''; multiWrapper.style.display = 'none'; });
+
+            multiSubmit?.addEventListener('click', async () => {
+                if (!exam) { setMessage('Select or create a draft exam first.'); return; }
+                const rows = Array.from(multiList.querySelectorAll('div'));
+                if (!rows.length) { setMessage('Add at least one row.'); return; }
+                try {
+                    setMessage('Submitting multiple questions...');
+                    const created = [];
+                    for (const row of rows) {
+                        const q = row.querySelector('[name=mq_question]').value.trim();
+                        const m = row.querySelector('[name=mq_marks]').value;
+                        if (!q || !m) continue;
+                        const data = new FormData();
+                        data.append('exam', exam.id);
+                        data.append('question_type', 'SHORT_ANSWER');
+                        data.append('question', q);
+                        data.append('marks', m);
+                        data.append('difficulty', '');
+                        data.append('options', JSON.stringify([]));
+                        data.append('correct_answer', JSON.stringify([]));
+                        data.append('explanation', '');
+                        const saved = await apiRequest('questions/', { method: 'POST', body: data });
+                        created.push(saved);
+                    }
+                    if (created.length) {
+                        draftQuestions.push(...created);
+                        renderDraftQuestions();
+                        setMessage(`${created.length} questions added to the draft.`);
+                    } else {
+                        setMessage('No valid rows to submit.');
+                    }
+                    multiList.innerHTML = '';
+                    multiWrapper.style.display = 'none';
+                } catch (error) {
+                    setMessage(error.message || 'Failed to submit multiple questions.');
+                }
+            });
+
+        });
+    </script>
+</body>
+</html>

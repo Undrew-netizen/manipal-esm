@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.db.models import Q
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -6,6 +7,8 @@ from accounts.permissions import IsLecturerOrAdmin
 from .models import Answer, StudentExam
 from .serializers import AnswerSerializer, StudentExamSerializer
 from .services import grade_student_exam
+from django.db import IntegrityError
+from rest_framework.exceptions import ValidationError
 
 class StudentExamViewSet(viewsets.ModelViewSet):
     serializer_class = StudentExamSerializer
@@ -15,10 +18,19 @@ class StudentExamViewSet(viewsets.ModelViewSet):
         return qs if self.request.user.role in {"ADMIN", "LECTURER"} else qs.filter(student=self.request.user)
     def perform_create(self, serializer):
         exam = serializer.validated_data["exam"]
-        if self.request.user.role != "STUDENT" or exam.status != "PUBLISHED" or not exam.students.filter(pk=self.request.user.pk).exists():
+        is_enrolled = exam.course.enrollments.filter(student=self.request.user).exists()
+        is_assigned = exam.students.filter(pk=self.request.user.pk).exists()
+        if self.request.user.role != "STUDENT" or exam.status != "PUBLISHED" or not (is_enrolled or is_assigned):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("This exam is not available to you.")
-        serializer.save(student=self.request.user)
+        # Prevent duplicate student attempts for the same exam
+        if StudentExam.objects.filter(student=self.request.user, exam=exam).exists():
+            raise ValidationError({"non_field_errors": ["An attempt for this exam already exists."]})
+        try:
+            serializer.save(student=self.request.user)
+        except IntegrityError:
+            # Race condition guard: translate DB integrity error to validation error
+            raise ValidationError({"non_field_errors": ["An attempt for this exam already exists."]})
     @action(detail=True, methods=["post"])
     def submit(self, request, pk=None):
         attempt = self.get_object(); result = grade_student_exam(attempt); return Response({"result_id": result.id, "score": attempt.score})

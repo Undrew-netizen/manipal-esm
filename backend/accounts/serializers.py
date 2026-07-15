@@ -14,7 +14,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, validators=[validate_password])
     class Meta:
         model = User
-        fields = ("username", "email", "password", "first_name", "last_name", "role", "registration_number", "staff_number", "phone", "department")
+        fields = ("username", "email", "password", "first_name", "last_name", "role", "registration_number", "staff_number", "phone", "department", "profile_picture")
     def validate(self, attrs):
         if attrs["role"] != User.STUDENT:
             raise serializers.ValidationError({"role": "Public registration is limited to students."})

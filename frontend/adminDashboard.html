@@ -1,5 +1,245 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Admin Dashboard | Manipal EMS</title><link rel="stylesheet" href="main.css"><script src="api.js" defer></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></head><body>
-<aside class="portal-sidebar"><div class="portal-brand"><img src="logo manipal.png" class="logo" alt="Manipal EMS logo"><div><h2>Manipal EMS</h2><p class="portal-role">Administrator portal</p></div></div><nav class="portal-nav"><a class="active" href="adminDashboard.html"><i class="fa-solid fa-table-columns"></i>Dashboard</a><a href="#users"><i class="fa-solid fa-users"></i>Users</a><a href="#exams"><i class="fa-solid fa-calendar-days"></i>Examinations</a><a href="#reports"><i class="fa-solid fa-chart-line"></i>Reports</a><a href="#settings"><i class="fa-solid fa-gear"></i>Settings</a></nav><a class="portal-logout" href="home.html"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a></aside>
-<header class="portal-header"><h1>Administrator Dashboard</h1><div class="portal-header-actions"><input type="search" aria-label="Search" placeholder="Search users or exams..."><a href="#notifications" aria-label="Notifications"><i class="fa-solid fa-bell"></i></a><a href="#profile"><i class="fa-solid fa-user-shield"></i> <span data-current-user>current user</span></a></div></header>
-<main class="portal-main"><section class="portal-cards"><article class="portal-card"><i class="fa-solid fa-user-graduate"></i><p>Registered students</p><strong>2,486</strong></article><article class="portal-card"><i class="fa-solid fa-chalkboard-user"></i><p>Active lecturers</p><strong>126</strong></article><article class="portal-card"><i class="fa-solid fa-calendar-check"></i><p>Active examinations</p><strong>34</strong></article><article class="portal-card"><i class="fa-solid fa-circle-check"></i><p>Results published</p><strong>21</strong></article></section><section class="portal-grid"><article class="portal-panel" id="exams"><h2>Examination status</h2><table class="portal-table"><thead><tr><th>Exam</th><th>Department</th><th>Date</th><th>Status</th></tr></thead><tbody><tr><td>Data Structures &amp; Algorithms</td><td>CSE</td><td>15 Jul 2026</td><td><span class="portal-badge">Scheduled</span></td></tr><tr><td>Clinical Pharmacology</td><td>Medicine</td><td>16 Jul 2026</td><td><span class="portal-badge">Scheduled</span></td></tr><tr><td>Engineering Mathematics</td><td>Engineering</td><td>18 Jul 2026</td><td><span class="portal-badge">Draft</span></td></tr></tbody></table></article><article class="portal-panel" id="reports"><h2>Administration tasks</h2><ul class="portal-list"><li><strong>8 lecturer accounts</strong><small>Awaiting verification</small></li><li><strong>3 room conflicts</strong><small>Require schedule review</small></li><li><strong>12 result sets</strong><small>Ready for publication</small></li></ul></article></section></main></body></html>
+<aside class="portal-sidebar"><div class="portal-brand"><img src="logo manipal.png" class="logo" alt="Manipal EMS logo"><div><h2>Manipal EMS</h2><p class="portal-role">Administrator portal</p></div></div><nav class="portal-nav"><a class="active" href="adminDashboard.html"><i class="fa-solid fa-table-columns"></i>Dashboard</a><a href="adminUsers.html"><i class="fa-solid fa-users"></i>Users &amp; alerts</a><a href="adminExams.html"><i class="fa-solid fa-calendar-days"></i>Examinations</a><a href="adminResults.html"><i class="fa-solid fa-square-poll-vertical"></i>Results</a><a href="adminReports.html"><i class="fa-solid fa-chart-line"></i>Reports</a></nav><a class="portal-logout" href="home.html"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a></aside>
+<header class="portal-header"><h1>Administrator Dashboard</h1><div class="portal-header-actions"><input type="search" aria-label="Search" placeholder="Search users, courses, or exams..."><a href="#notifications" aria-label="Notifications"><i class="fa-solid fa-bell"></i></a><a href="#profile"><i class="fa-solid fa-user-shield"></i> <span data-current-user>current user</span></a></div></header>
+<main class="portal-main">
+    <p id="admin-dashboard-message" role="alert"></p>
+    <section class="portal-cards" id="admin-stats"></section>
+    <section class="portal-grid">
+        <article class="portal-panel">
+            <h2>Departments</h2>
+            <form id="department-create-form" style="display:grid;gap:10px;max-width:720px;">
+                <input name="name" placeholder="Department name" required>
+                <input name="faculty" placeholder="Faculty name" required>
+                <textarea name="description" placeholder="Description"></textarea>
+                <button class="portal-button" type="submit">Create department</button>
+            </form>
+            <table class="portal-table" style="margin-top:16px;"><thead><tr><th>Department</th><th>Faculty</th><th>Description</th></tr></thead><tbody id="department-list"></tbody></table>
+        </article>
+        <article class="portal-panel">
+            <h2>Courses</h2>
+            <form id="course-create-form" style="display:grid;gap:10px;max-width:720px;">
+                <input name="course_code" placeholder="Course code" required>
+                <input name="course_name" placeholder="Course name" required>
+                <select name="department" required><option value="">Select department</option></select>
+                <select name="assigned_lecturer"><option value="">Assign lecturer (optional)</option></select>
+                <label>Semester <input name="semester" type="number" min="1" required></label>
+                <input name="academic_year" placeholder="Academic year" required>
+                <button class="portal-button" type="submit">Create course</button>
+            </form>
+            <table class="portal-table" style="margin-top:16px;"><thead><tr><th>Course</th><th>Department</th><th>Lecturer</th><th>Year</th></tr></thead><tbody id="course-list"></tbody></table>
+        </article>
+    </section>
+    <section class="portal-grid">
+        <article class="portal-panel">
+            <h2>Link lecturer to department</h2>
+            <form id="lecturer-department-form" style="display:flex;gap:10px;flex-wrap:wrap;">
+                <select name="lecturer" required><option value="">Select lecturer</option></select>
+                <select name="department" required><option value="">Select department</option></select>
+                <button class="portal-button" type="submit">Assign department</button>
+            </form>
+        </article>
+        <article class="portal-panel">
+            <h2>Assign lecturer to course</h2>
+            <form id="course-lecturer-form" style="display:flex;gap:10px;flex-wrap:wrap;">
+                <select name="course" required><option value="">Select course</option></select>
+                <select name="lecturer" required><option value="">Select lecturer</option></select>
+                <button class="portal-button" type="submit">Assign lecturer</button>
+            </form>
+        </article>
+    </section>
+    <section class="portal-panel">
+        <h2>Enroll students in courses</h2>
+        <form id="enrolment-form" style="display:flex;gap:10px;flex-wrap:wrap;">
+            <select name="student" required><option value="">Select student</option></select>
+            <select name="course" required><option value="">Select course</option></select>
+            <button class="portal-button" type="submit">Enroll student</button>
+        </form>
+        <table class="portal-table" style="margin-top:16px;"><thead><tr><th>Student</th><th>Course</th><th>Enrolled on</th></tr></thead><tbody id="enrolment-list"></tbody></table>
+    </section>
+</main>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const message = document.querySelector('#admin-dashboard-message');
+        const stats = document.querySelector('#admin-stats');
+        const departmentList = document.querySelector('#department-list');
+        const courseList = document.querySelector('#course-list');
+        const enrolmentList = document.querySelector('#enrolment-list');
+        const departmentCreateForm = document.querySelector('#department-create-form');
+        const courseCreateForm = document.querySelector('#course-create-form');
+        const lecturerDepartmentForm = document.querySelector('#lecturer-department-form');
+        const courseLecturerForm = document.querySelector('#course-lecturer-form');
+        const enrolmentForm = document.querySelector('#enrolment-form');
+
+        const updateMessage = text => { if (message) message.textContent = text; };
+        const getName = user => `${user.first_name ; ''} ${user.last_name || user.username}`.trim() ; user.username;
+
+        const renderCounts = ({ students, lecturers, courses, departments, enrollments }) => {
+            if (!stats) return;
+            stats.innerHTML = [
+                { label: 'Registered students', value: students.length },
+                { label: 'Active lecturers', value: lecturers.length },
+                { label: 'Departments', value: departments.length },
+                { label: 'Courses', value: courses.length },
+                { label: 'Enrollments', value: enrollments.length },
+            ].map(item => `
+                <article class="portal-card"><i class="fa-solid fa-circle-check"></i><p>${item.label}</p><strong>${item.value}</strong></article>
+            `).join('');
+        };
+
+        const load = async () => {
+            try {
+                const [users, departments, courses, enrollments] = await Promise.all([
+                    apiRequest('users/'),
+                    apiRequest('departments/'),
+                    apiRequest('courses/'),
+                    apiRequest('enrollments/'),
+                ]);
+
+                const students = users.filter(user => user.role === 'STUDENT');
+                const lecturers = users.filter(user => user.role === 'LECTURER');
+
+                const departmentOptions = '<option value="">Select department</option>' + departments.map(department => `
+                    <option value="${department.id}">${text(department.name)}</option>
+                `).join('');
+
+                const lecturerOptions = '<option value="">Select lecturer</option>' + lecturers.map(lecturer => `
+                    <option value="${lecturer.id}">${text(getName(lecturer))}</option>
+                `).join('');
+
+                const studentOptions = '<option value="">Select student</option>' + students.map(student => `
+                    <option value="${student.id}">${text(getName(student))}</option>
+                `).join('');
+
+                const courseOptions = '<option value="">Select course</option>' + courses.map(course => `
+                    <option value="${course.id}">${text(`${course.course_code} — ${course.course_name}`)}</option>
+                `).join('');
+
+                departmentCreateForm.department.innerHTML = departmentOptions;
+                courseCreateForm.department.innerHTML = departmentOptions;
+                courseCreateForm.assigned_lecturer.innerHTML = '<option value="">Assign lecturer (optional)</option>' + lecturers.map(lecturer => `
+                    <option value="${lecturer.id}">${text(getName(lecturer))}</option>
+                `).join('');
+                lecturerDepartmentForm.lecturer.innerHTML = lecturerOptions;
+                lecturerDepartmentForm.department.innerHTML = departmentOptions;
+                courseLecturerForm.course.innerHTML = courseOptions;
+                courseLecturerForm.lecturer.innerHTML = lecturerOptions;
+                enrolmentForm.student.innerHTML = studentOptions;
+                enrolmentForm.course.innerHTML = courseOptions;
+
+                departmentList.innerHTML = departments.length ? departments.map(department => `
+                    <tr><td>${text(department.name)}</td><td>${text(department.faculty)}</td><td>${text(department.description)}</td></tr>
+                `).join('') : '<tr><td colspan="3">No departments found.</td></tr>';
+
+                courseList.innerHTML = courses.length ? courses.map(course => `
+                    <tr><td>${text(`${course.course_code} — ${course.course_name}`)}</td><td>${text(departments.find(d => d.id === course.department)?.name)}</td><td>${text(getName(users.find(u => u.id === course.assigned_lecturer) || {}))}</td><td>${text(course.academic_year)}</td></tr>
+                `).join('') : '<tr><td colspan="4">No courses found.</td></tr>';
+
+                enrolmentList.innerHTML = enrollments.length ? enrollments.map(enrollment => `
+                    <tr><td>${text(enrollment.student_name)}</td><td>${text(enrollment.course_name)}</td><td>${text(new Date(enrollment.created_at).toLocaleDateString())}</td></tr>
+                `).join('') : '<tr><td colspan="3">No enrollments yet.</td></tr>';
+
+                renderCounts({ students, lecturers, courses, departments, enrollments });
+            } catch (error) {
+                updateMessage(error.message);
+            }
+        };
+
+        departmentCreateForm.addEventListener('submit', async event => {
+            event.preventDefault();
+            const form = event.target;
+            try {
+                await apiRequest('departments/', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        name: form.name.value,
+                        faculty: form.faculty.value,
+                        description: form.description.value,
+                    }),
+                });
+                updateMessage('Department created successfully.');
+                form.reset();
+                await load();
+            } catch (error) {
+                updateMessage(error.message);
+            }
+        });
+
+        courseCreateForm.addEventListener('submit', async event => {
+            event.preventDefault();
+            const form = event.target;
+            try {
+                await apiRequest('courses/', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        course_code: form.course_code.value,
+                        course_name: form.course_name.value,
+                        department: form.department.value,
+                        semester: form.semester.value,
+                        academic_year: form.academic_year.value,
+                        assigned_lecturer: form.assigned_lecturer.value ; null,
+                    }),
+                });
+                updateMessage('Course created successfully.');
+                form.reset();
+                await load();
+            } catch (error) {
+                updateMessage(error.message);
+            }
+        });
+
+        lecturerDepartmentForm.addEventListener('submit', async event => {
+            event.preventDefault();
+            const form = event.target;
+            try {
+                await apiRequest(`users/${form.lecturer.value}/`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ department: form.department.value }),
+                });
+                updateMessage('Lecturer assigned to department.');
+                form.reset();
+                await load();
+            } catch (error) {
+                updateMessage(error.message);
+            }
+        });
+
+        courseLecturerForm.addEventListener('submit', async event => {
+            event.preventDefault();
+            const form = event.target;
+            try {
+                await apiRequest(`courses/${form.course.value}/`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ assigned_lecturer: form.lecturer.value }),
+                });
+                updateMessage('Lecturer assigned to course.');
+                form.reset();
+                await load();
+            } catch (error) {
+                updateMessage(error.message);
+            }
+        });
+
+        enrolmentForm.addEventListener('submit', async event => {
+            event.preventDefault();
+            const form = event.target;
+            try {
+                await apiRequest('enrollments/', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        student: form.student.value,
+                        course: form.course.value,
+                    }),
+                });
+                updateMessage('Student enrolled successfully.');
+                form.reset();
+                await load();
+            } catch (error) {
+                updateMessage(error.message);
+            }
+        });
+
+        await load();
+    });
+</script>
+</body></html>
