@@ -8,7 +8,7 @@
         <script src="api.js" defer></script>
     </head>
     <body class="login-page">
-        <div class="login-container">
+        <div class="login-container" style="border: 1px solid #fff;">
             <h1 style="color: #fff; font-weight: bold; font-size: 30px;">Sign Up</h1>
             <form id="signup-form" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
                 <label for="name" style="font-weight: bolder; color: #ffffff;">Name:</label>
@@ -25,26 +25,46 @@
                 <label for="profile-picture" style="font-weight: bolder; color: #ffffff;">Profile picture (optional):</label>
                 <input type="file" id="profile-picture" name="profile_picture" accept="image/*" style="color: #ffffff;">
                 <button type="submit" class="button" style="background-color: #410202; margin-top: 20px; color: #fff; font-weight: bolder; width: 160px; height: 40px; border-radius: 10px; border: none;">Sign Up</button>
+                <p style="color: #fff;">Already have an account?</p>
+                <button type="button" id="login-button" class="button" style="background-color: #ccc; margin-top: 2px; color: #310101; font-weight: bolder; width: 160px; height: 40px; border-radius: 10px; border: none; font-size: 16px; cursor: pointer;">Log In</button>
             </form>
-            <p id="auth-message" role="alert"></p>
+            <p id="auth-message" role="alert" style="color: #ffdddd; min-height: 1.2em;"></p>
         </div>
         <script>
-          document.getElementById('signup-form').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const form = event.currentTarget;
-            const nameParts = form.elements.name.value.trim().split(/\s+/);
-            try {
-              const username = form.elements.username.value.trim();
-              const password = form.elements.password.value;
-              const registration = new FormData();
-              registration.append('username', username); registration.append('password', password); registration.append('email', form.elements.email.value.trim());
-              registration.append('registration_number', form.elements.identifier.value.trim()); registration.append('role', 'STUDENT');
-              registration.append('first_name', nameParts.shift() || ''); registration.append('last_name', nameParts.join(' '));
-              if (form.elements.profile_picture.files[0]) registration.append('profile_picture', form.elements.profile_picture.files[0]);
-              const tokens = await apiRequest('register/', { method: 'POST', body: registration });
-              localStorage.setItem('access_token', tokens.access); localStorage.setItem('refresh_token', tokens.refresh);
-              window.location.assign('studentDashboard.html');
-            } catch (error) { document.getElementById('auth-message').textContent = error.message; }
+          document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('login-button').addEventListener('click', () => window.location.assign('login.html'));
+            document.getElementById('signup-form').addEventListener('submit', async (event) => {
+              event.preventDefault();
+              const form = event.currentTarget;
+              const nameParts = form.elements.name.value.trim().split(/\s+/);
+              const payload = {
+                username: form.elements.username.value.trim(),
+                password: form.elements.password.value,
+                email: form.elements.email.value.trim(),
+                registration_number: form.elements.identifier.value.trim(),
+                role: 'STUDENT',
+                first_name: nameParts.shift() || '',
+                last_name: nameParts.join(' '),
+              };
+
+              try {
+                const options = { method: 'POST' };
+                if (form.elements.profile_picture.files[0]) {
+                  const registration = new FormData();
+                  Object.entries(payload).forEach(([key, value]) => registration.append(key, value));
+                  registration.append('profile_picture', form.elements.profile_picture.files[0]);
+                  options.body = registration;
+                } else {
+                  options.body = JSON.stringify(payload);
+                }
+                const tokens = await apiRequest('register/', options);
+                localStorage.setItem('access_token', tokens.access);
+                localStorage.setItem('refresh_token', tokens.refresh);
+                window.location.assign('studentDashboard.html');
+              } catch (error) {
+                document.getElementById('auth-message').textContent = error.message;
+              }
+            });
           });
         </script>
     </body>

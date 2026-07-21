@@ -2,17 +2,35 @@ const API_BASE = 'http://127.0.0.1:8000/api/';
 const dashboardForRole = { STUDENT: 'studentDashboard.html', LECTURER: 'lecturerDashboard.html', ADMIN: 'adminDashboard.html' };
 
 async function apiRequest(path, options = {}) {
-  const headers = { ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }), ...(options.headers || {}) };
+  const { headers: customHeaders = {}, body } = options;
+  const headers = { ...customHeaders };
+  let requestBody = body;
+
+  if (body instanceof FormData) {
+    // FormData uploads must let the browser set the Content-Type boundary.
+  } else if (body != null) {
+    if (typeof body === 'object' && !(body instanceof String)) {
+      requestBody = JSON.stringify(body);
+    }
+    if (!headers['Content-Type'] && !headers['content-type']) {
+      headers['Content-Type'] = 'application/json';
+    }
+  }
+
   const token = localStorage.getItem('access_token');
   if (token) headers.Authorization = `Bearer ${token}`;
-  const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
-  const body = await response.json().catch(() => ({}));
+  const response = await fetch(`${API_BASE}${path}`, { ...options, headers, body: requestBody });
+  const bodyJson = await response.json().catch(() => ({}));
+
   if (!response.ok) {
-    console.error('API request failed', { path, status: response.status, body });
-    const message = typeof body === 'object' && Object.keys(body).length ? JSON.stringify(body) : (body.detail || 'Request failed.');
+    console.error('API request failed', { path, status: response.status, body: bodyJson });
+    const message = typeof bodyJson === 'object' && Object.keys(bodyJson).length
+      ? JSON.stringify(bodyJson)
+      : (bodyJson.detail || 'Request failed.');
     throw new Error(message);
   }
-  return body;
+
+  return bodyJson;
 }
 
 const text = value => String(value ?? '—').replace(/[&<>'"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[c]));

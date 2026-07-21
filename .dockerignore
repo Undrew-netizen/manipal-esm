@@ -1,0 +1,16 @@
+**/__pycache__
+**/*.py[cod]
+**/*.py~
+**/.git
+**/.gitignore
+**/.DS_Store
+**/backend/venv
+**/backend/ems
+**/backend/__pycache__
+**/frontend/__pycache__
+**/backend/db.sqlite3
+**/backend/media
+**/*.log
+**/.vscode
+**/.idea
+**/node_modules

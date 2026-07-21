@@ -31,7 +31,7 @@
     </header>
     <main class="portal-main">
         <p id="exam-message" role="alert"></p>
-        <section class="portal-panel">
+        <section class="portal-panel" style ="margin-bottom:16px;">
             <h2>1. Create a draft exam</h2>
             <form id="exam-form" style="display:grid;gap:10px;max-width:720px">
                 <input name="title" placeholder="Exam title" required>
@@ -42,15 +42,15 @@
                 <label>Documented exam / paper (optional)
                     <input name="document" type="file" accept=".pdf,.doc,.docx,.txt">
                 </label>
-                <label>Exam date <input name="exam_date" type="date" required></label>
-                <label>Start time <input name="start_time" type="time" required></label>
-                <label>End time <input name="end_time" type="time" required></label>
-                <label>Duration (minutes) <input name="duration" type="number" min="1" required></label>
-                <label>Passing marks <input name="passing_marks" type="number" min="0" step="0.01" value="0" required></label>
+                <label>Exam date <input name="exam_date" type="date" required style="border-radius: 10px;border: 1px solid #290303;"></label>
+                <label>Start time <input name="start_time" type="time" required style="border-radius: 10px;border: 1px solid #290303; "></label>
+                <label>End time <input name="end_time" type="time" required style="border-radius: 10px; border: 1px solid #290303;"></label>
+                <label>Duration (minutes) <input name="duration" type="number" min="1" required style="border-radius: 10px;border: 1px solid #290303;"></label>
+                <label>Passing marks <input name="passing_marks" type="number" min="0" step="0.01" value="0" required style="border-radius: 10px;border: 1px solid #290303;"></label>
                 <button class="portal-button" type="submit">Create draft</button>
             </form>
         </section>
-        <section class="portal-panel" id="question-section">
+        <section class="portal-panel" id="question-section" style="margin-bottom:16px;">
             <h2>2. Add questions</h2>
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
                 <p id="selected-exam-title">Add questions before creating the draft exam.</p>
@@ -69,11 +69,10 @@
                     <option value="MATCHING">Matching</option>
                 </select>
                 <textarea name="question" placeholder="Question text" required></textarea>
-                <label>Marks <input name="marks" type="number" min="0.01" step="0.01" required></label>
-                <input name="difficulty" placeholder="Difficulty (Easy, Medium, Hard)" type="text">
-                <textarea name="options" placeholder="Options, one per line"></textarea>
-                <textarea name="correct_answer" placeholder="Correct answer(s), one per line"></textarea>
-                <textarea name="explanation" placeholder="Explanation for answer (optional)"></textarea>
+                <label>Marks <input name="marks" type="number" min="0.01" step="0.01" required style="border-radius: 10px;border: 1px solid #290303;"></label>
+                <textarea name="options" placeholder="Options, one per line" style="border-radius: 10px;border: 1px solid #290303;"></textarea>
+                <textarea name="correct_answer" placeholder="Correct answer(s), one per line" style="border-radius: 10px;border: 1px solid #290303;"></textarea>
+
                 <label>Question image <input name="image" type="file" accept="image/*"></label>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
                     <button class="portal-button" type="submit">Add question to draft</button>
@@ -99,7 +98,7 @@
                 </div>
             </div>
         </section>
-        <section class="portal-panel">
+        <section class="portal-panel" style="margin-bottom:16px;">
             <h2>My examinations</h2>
             <table class="portal-table">
                 <thead><tr><th>Exam</th><th>Course</th><th>Date</th><th>Document</th><th>Status</th><th>Actions</th></tr></thead>

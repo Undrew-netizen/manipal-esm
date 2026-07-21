@@ -8,14 +8,15 @@ body{
 }
 
 .login-page{
-    min-height: 100vh;
+    height: 100vh;
     width: 100%;
     background-image: url('manipal.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: scroll;
+    background-attachment: fixed;
     box-sizing: border-box;
+    overflow: auto;
 }
 .top{
     background-color: #410202;
@@ -196,11 +197,14 @@ body{
     width: 85vw;
     min-height: 100vh;
     background-color: #f0e9e9;
+    gap: 20px;
 }
 .dashboardcontent h1{
     font-size: 30px;
     font-weight: bold;
     color: #410202;
+    
+
 }
 .dashboardcontent .exam-count{
     width: 75vw;

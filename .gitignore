@@ -1,0 +1,39 @@
+# Python cache and artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django / local env files
+*.log
+*.pot
+*.pyc
+*.pyo
+*.sqlite3
+db.sqlite3
+backend/db.sqlite3
+local_settings.py
+.env
+.env.*
+
+# Virtual environments
+venv/
+ENV/
+env/
+backend/ems/
+backend/venv/
+
+# Django media/uploads
+media/
+backend/media/
+frontend/media/
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+*.iml
+.idea/

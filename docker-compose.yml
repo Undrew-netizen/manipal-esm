@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - '8000:8000'
+    volumes:
+      - .:/app:cached
+      - ./backend/media:/app/backend/media
+    environment:
+      - PYTHONUNBUFFERED=1
+    entrypoint: ["/app/docker-entrypoint.sh"]
+    command: ["python", "backend/manage.py", "runserver", "0.0.0.0:8000"]

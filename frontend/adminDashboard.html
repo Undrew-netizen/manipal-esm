@@ -72,7 +72,7 @@
         const enrolmentForm = document.querySelector('#enrolment-form');
 
         const updateMessage = text => { if (message) message.textContent = text; };
-        const getName = user => `${user.first_name ; ''} ${user.last_name || user.username}`.trim() ; user.username;
+        const getName = user => `${user.first_name || ''} ${user.last_name || user.username}`.trim();
 
         const renderCounts = ({ students, lecturers, courses, departments, enrollments }) => {
             if (!stats) return;
@@ -115,7 +115,6 @@
                     <option value="${course.id}">${text(`${course.course_code} — ${course.course_name}`)}</option>
                 `).join('');
 
-                departmentCreateForm.department.innerHTML = departmentOptions;
                 courseCreateForm.department.innerHTML = departmentOptions;
                 courseCreateForm.assigned_lecturer.innerHTML = '<option value="">Assign lecturer (optional)</option>' + lecturers.map(lecturer => `
                     <option value="${lecturer.id}">${text(getName(lecturer))}</option>
@@ -177,7 +176,7 @@
                         department: form.department.value,
                         semester: form.semester.value,
                         academic_year: form.academic_year.value,
-                        assigned_lecturer: form.assigned_lecturer.value ; null,
+                        assigned_lecturer: form.assigned_lecturer.value || null,
                     }),
                 });
                 updateMessage('Course created successfully.');
